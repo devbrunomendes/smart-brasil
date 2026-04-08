@@ -153,6 +153,7 @@
                                 <option value="cpf">CPF</option>
                                 <option value="cnpj">CNPJ</option>
                                 <option value="rg">RG</option>
+                                <option value="cnh">CNH</option>
                             </select>
                             <span class="error-message" id="error-tipoDocumento"></span>
                         </div>
@@ -176,6 +177,13 @@
                             <label for="rg" class="form-label">RG *</label>
                             <input type="text" id="rg" name="rg" class="form-input" placeholder="00.000.000-0" maxlength="13">
                             <span class="error-message" id="error-rg"></span>
+                        </div>
+
+                        <!-- Campo CNH -->
+                        <div class="form-group document-field" id="cnh-field" style="display: none;">
+                            <label for="cnh" class="form-label">CNH *</label>
+                            <input type="text" id="cnh" name="cnh" class="form-input" placeholder="00000000000" maxlength="11">
+                            <span class="error-message" id="error-cnh"></span>
                         </div>
 
                         <div class="form-group">
@@ -231,10 +239,18 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="ano" class="form-label">Ano *</label>
-                                <input type="number" id="ano" name="ano" class="form-input" min="1900" max="2025" required>
-                                <span class="error-message" id="error-ano"></span>
+                                <label for="anoFabricacao" class="form-label">Ano Fabricação *</label>
+                                <input type="number" id="anoFabricacao" name="anoFabricacao" class="form-input" min="1900" max="2026" required>
+                                <span class="error-message" id="error-anoFabricacao"></span>
                             </div>
+                            <div class="form-group">
+                                <label for="anoModelo" class="form-label">Ano Modelo *</label>
+                                <input type="number" id="anoModelo" name="anoModelo" class="form-input" min="1900" max="2027" required>
+                                <span class="error-message" id="error-anoModelo"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
                             <div class="form-group">
                                 <label for="cor" class="form-label">Cor *</label>
                                 <input type="text" id="cor" name="cor" class="form-input" required>
@@ -298,7 +314,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="fotoVeiculo" class="form-label">Fotos do veículo *</label>
+                            <label for="fotoVeiculo" class="form-label">Fotos do veículo avariado *</label>
                             <div class="file-upload-area" id="fotoVeiculoArea">
                                 <input type="file" id="fotoVeiculo" name="fotoVeiculo" class="file-input" accept="image/*" multiple required>
                                 <div class="file-upload-content">
@@ -316,9 +332,9 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="documentos" class="form-label">Documentos adicionais</label>
-                            <div class="file-upload-area" id="documentosArea">
-                                <input type="file" id="documentos" name="documentos" class="file-input" accept=".pdf,.doc,.docx" multiple>
+                            <label for="docVeiculo" class="form-label">Documento do veículo *</label>
+                            <div class="file-upload-area" id="docVeiculoArea">
+                                <input type="file" id="docVeiculo" name="docVeiculo" class="file-input" accept="image/*,.pdf" multiple required>
                                 <div class="file-upload-content">
                                     <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -327,11 +343,99 @@
                                         <line x1="16" y1="17" x2="8" y2="17"></line>
                                         <polyline points="10 9 9 9 8 9"></polyline>
                                     </svg>
-                                    <p class="upload-text">Clique para enviar ou arraste os documentos aqui</p>
-                                    <p class="upload-hint">PDF, DOC, DOCX até 10MB</p>
+                                    <p class="upload-text">Clique para enviar ou arraste o documento aqui</p>
+                                    <p class="upload-hint">PNG, JPG, PDF até 10MB</p>
                                 </div>
-                                <div class="file-preview" id="documentosPreview"></div>
+                                <div class="file-preview" id="docVeiculoPreview"></div>
                             </div>
+                            <span class="error-message" id="error-docVeiculo"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="docAssociado" class="form-label">Documento do associado (RG ou CNH) *</label>
+                            <div class="file-upload-area" id="docAssociadoArea">
+                                <input type="file" id="docAssociado" name="docAssociado" class="file-input" accept="image/*,.pdf" multiple required>
+                                <div class="file-upload-content">
+                                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                    <p class="upload-text">Clique para enviar ou arraste o documento aqui</p>
+                                    <p class="upload-hint">PNG, JPG, PDF até 10MB</p>
+                                </div>
+                                <div class="file-preview" id="docAssociadoPreview"></div>
+                            </div>
+                            <span class="error-message" id="error-docAssociado"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="docCondutor" class="form-label">Documento do condutor (RG ou CNH) *</label>
+                            <label class="checkbox-option" style="margin-bottom: 12px;">
+                                <input type="checkbox" id="condutorMesmoAssociado" name="condutorMesmoAssociado">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">Condutor é o mesmo que o associado</span>
+                            </label>
+                            <div id="docCondutorUpload">
+                                <div class="file-upload-area" id="docCondutorArea">
+                                    <input type="file" id="docCondutor" name="docCondutor" class="file-input" accept="image/*,.pdf" multiple required>
+                                    <div class="file-upload-content">
+                                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                                            <polyline points="10 9 9 9 8 9"></polyline>
+                                        </svg>
+                                        <p class="upload-text">Clique para enviar ou arraste o documento aqui</p>
+                                        <p class="upload-hint">PNG, JPG, PDF até 10MB</p>
+                                    </div>
+                                    <div class="file-preview" id="docCondutorPreview"></div>
+                                </div>
+                                <span class="error-message" id="error-docCondutor"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="comprovanteResidencia" class="form-label">Comprovante de residência *</label>
+                            <div class="file-upload-area" id="comprovanteResidenciaArea">
+                                <input type="file" id="comprovanteResidencia" name="comprovanteResidencia" class="file-input" accept="image/*,.pdf" multiple required>
+                                <div class="file-upload-content">
+                                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                    <p class="upload-text">Clique para enviar ou arraste o documento aqui</p>
+                                    <p class="upload-hint">PNG, JPG, PDF até 10MB</p>
+                                </div>
+                                <div class="file-preview" id="comprovanteResidenciaPreview"></div>
+                            </div>
+                            <span class="error-message" id="error-comprovanteResidencia"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="boletimOcorrencia" class="form-label">Boletim de ocorrência *</label>
+                            <div class="file-upload-area" id="boletimOcorrenciaArea">
+                                <input type="file" id="boletimOcorrencia" name="boletimOcorrencia" class="file-input" accept="image/*,.pdf" multiple required>
+                                <div class="file-upload-content">
+                                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                    <p class="upload-text">Clique para enviar ou arraste o documento aqui</p>
+                                    <p class="upload-hint">PNG, JPG, PDF até 10MB</p>
+                                </div>
+                                <div class="file-preview" id="boletimOcorrenciaPreview"></div>
+                            </div>
+                            <span class="error-message" id="error-boletimOcorrencia"></span>
                         </div>
                     </div>
 
@@ -349,7 +453,7 @@
                                     <p>1. O associado declara que todas as informações fornecidas são verdadeiras e corretas.</p>
                                     <p>2. O associado autoriza a verificação dos dados informados.</p>
                                     <p>3. O comunicado será analisado conforme as regras do contrato de proteção veicular.</p>
-                                    <p>4. O prazo para análise é de até 5 dias úteis.</p>
+                                    <p>4. O prazo para análise é de até 10 dias úteis.</p>
                                     <p>5. O associado está ciente de que informações falsas podem resultar na recusa do comunicado.</p>
                                 </div>
                             </div>

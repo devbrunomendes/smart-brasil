@@ -524,6 +524,11 @@ body::before {
     cursor: pointer;
 }
 
+.form-select option {
+    background: #014278;
+    color: #ffffff;
+}
+
 /* File Upload */
 .file-upload-area {
     position: relative;
@@ -737,6 +742,16 @@ body::before {
 
 .btn span {
     font-size: 1.2rem;
+}
+
+.btn:disabled,
+.btn[disabled] {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.4);
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+    pointer-events: none;
 }
 
 /* ============================================

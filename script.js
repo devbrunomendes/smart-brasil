@@ -62,6 +62,11 @@ function updateStepDisplay() {
     btnNext.style.display = currentStep === totalSteps ? 'none' : 'flex';
     btnSubmit.style.display = currentStep === totalSteps ? 'flex' : 'none';
 
+    // Disable submit button on step 5 until terms are accepted
+    if (currentStep === totalSteps) {
+        updateSubmitButton();
+    }
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -281,6 +286,21 @@ document.querySelectorAll('input:not([type="radio"]), select, textarea').forEach
 });
 
 // ============================================
+// TERMS ACCEPTANCE - SUBMIT BUTTON LOCK
+// ============================================
+
+const aceiteTermos = document.getElementById('aceiteTermos');
+const autorizacaoDados = document.getElementById('autorizacaoDados');
+
+function updateSubmitButton() {
+    const bothChecked = aceiteTermos && autorizacaoDados && aceiteTermos.checked && autorizacaoDados.checked;
+    btnSubmit.disabled = !bothChecked;
+}
+
+if (aceiteTermos) aceiteTermos.addEventListener('change', updateSubmitButton);
+if (autorizacaoDados) autorizacaoDados.addEventListener('change', updateSubmitButton);
+
+// ============================================
 // PHONE INPUT MASK
 // ============================================
 
@@ -330,15 +350,17 @@ const tipoDocumentoSelect = document.getElementById('tipoDocumento');
 const cpfField = document.getElementById('cpf-field');
 const cnpjField = document.getElementById('cnpj-field');
 const rgField = document.getElementById('rg-field');
+const cnhField = document.getElementById('cnh-field');
 const cpfInput = document.getElementById('cpf');
 const cnpjInput = document.getElementById('cnpj');
 const rgInput = document.getElementById('rg');
+const cnhInput = document.getElementById('cnh');
 
 function toggleDocumentFields() {
     const selectedType = tipoDocumentoSelect.value;
     
     // Hide all fields with animation
-    [cpfField, cnpjField, rgField].forEach(field => {
+    [cpfField, cnpjField, rgField, cnhField].forEach(field => {
         if (field && field.style.display !== 'none') {
             field.style.opacity = '0';
             field.style.transform = 'translateY(-10px)';
@@ -352,6 +374,7 @@ function toggleDocumentFields() {
     if (cpfInput) cpfInput.removeAttribute('required');
     if (cnpjInput) cnpjInput.removeAttribute('required');
     if (rgInput) rgInput.removeAttribute('required');
+    if (cnhInput) cnhInput.removeAttribute('required');
     
     // Clear values and errors
     if (cpfInput) {
@@ -369,7 +392,12 @@ function toggleDocumentFields() {
         const errorEl = document.getElementById('error-rg');
         if (errorEl) errorEl.textContent = '';
     }
-    
+    if (cnhInput) {
+        cnhInput.value = '';
+        const errorEl = document.getElementById('error-cnh');
+        if (errorEl) errorEl.textContent = '';
+    }
+
     // Show and set required for selected type
     setTimeout(() => {
         if (selectedType === 'cpf' && cpfField) {
@@ -395,6 +423,14 @@ function toggleDocumentFields() {
                 rgField.style.opacity = '1';
                 rgField.style.transform = 'translateY(0)';
                 if (rgInput) rgInput.focus();
+            }, 10);
+        } else if (selectedType === 'cnh' && cnhField) {
+            cnhField.style.display = 'block';
+            if (cnhInput) cnhInput.setAttribute('required', 'required');
+            setTimeout(() => {
+                cnhField.style.opacity = '1';
+                cnhField.style.transform = 'translateY(0)';
+                if (cnhInput) cnhInput.focus();
             }, 10);
         }
     }, 300);
@@ -506,6 +542,29 @@ if (rgInput) {
 }
 
 // ============================================
+// CNH MASK
+// ============================================
+
+if (cnhInput) {
+    cnhInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.slice(0, 11);
+        e.target.value = value;
+    });
+
+    cnhInput.addEventListener('blur', () => {
+        const value = cnhInput.value.replace(/\D/g, '');
+        if (value.length > 0 && value.length !== 11) {
+            const errorEl = document.getElementById('error-cnh');
+            if (errorEl) {
+                errorEl.textContent = 'CNH deve ter 11 dígitos';
+                errorEl.style.display = 'block';
+            }
+        }
+    });
+}
+
+// ============================================
 // FILE UPLOAD
 // ============================================
 
@@ -604,7 +663,28 @@ function removeFile(input, index) {
 }
 
 setupFileUpload('fotoVeiculo', 'fotoVeiculoPreview');
-setupFileUpload('documentos', 'documentosPreview');
+setupFileUpload('docVeiculo', 'docVeiculoPreview');
+
+// Documento do condutor — toggle obrigatoriedade
+const condutorMesmoAssociado = document.getElementById('condutorMesmoAssociado');
+const docCondutorUpload = document.getElementById('docCondutorUpload');
+const docCondutorInput = document.getElementById('docCondutor');
+
+if (condutorMesmoAssociado) {
+    condutorMesmoAssociado.addEventListener('change', () => {
+        const isSame = condutorMesmoAssociado.checked;
+        docCondutorUpload.style.display = isSame ? 'none' : 'block';
+        if (isSame) {
+            docCondutorInput.removeAttribute('required');
+        } else {
+            docCondutorInput.setAttribute('required', 'required');
+        }
+    });
+}
+setupFileUpload('docCondutor', 'docCondutorPreview');
+setupFileUpload('docAssociado', 'docAssociadoPreview');
+setupFileUpload('comprovanteResidencia', 'comprovanteResidenciaPreview');
+setupFileUpload('boletimOcorrencia', 'boletimOcorrenciaPreview');
 
 // ============================================
 // FORM SUBMISSION
@@ -633,6 +713,8 @@ form.addEventListener('submit', (e) => {
         documentoValue = formData.get('cnpj') || '';
     } else if (tipoDocumento === 'rg') {
         documentoValue = formData.get('rg') || '';
+    } else if (tipoDocumento === 'cnh') {
+        documentoValue = formData.get('cnh') || '';
     }
     
     // Simulate processing time
@@ -655,7 +737,8 @@ form.addEventListener('submit', (e) => {
             placa: formData.get('placa'),
             marca: formData.get('marca'),
             modelo: formData.get('modelo'),
-            ano: formData.get('ano'),
+            ano_fabricacao: formData.get('anoFabricacao'),
+            ano_modelo: formData.get('anoModelo'),
             cor: formData.get('cor'),
             chassi: formData.get('chassi'),
             
