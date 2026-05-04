@@ -2,13 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const { Resend } = require('resend');
-const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const LOGO = fs.readFileSync(path.join(__dirname, '72951134_400071727561312_8990870712499568640_n.jpg'));
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -32,9 +29,7 @@ app.post('/submit', upload.fields(fileFields), async (req, res) => {
         const d = req.body;
         const files = req.files || {};
 
-        const attachments = [
-            { filename: 'logo.jpg', content: LOGO, contentType: 'image/jpeg' },
-        ];
+        const attachments = [];
 
         const fileLabels = {
             fotoVeiculo: 'Foto do veículo',
@@ -46,15 +41,26 @@ app.post('/submit', upload.fields(fileFields), async (req, res) => {
             boletimOcorrencia: 'Boletim de ocorrência',
         };
 
+        const MAX_FILE_MB = 8;
+        const MAX_TOTAL_MB = 28;
+        const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+        const MAX_TOTAL_BYTES = MAX_TOTAL_MB * 1024 * 1024;
+
+        let totalBytes = 0;
         const attachedFileNames = {};
+
         for (const [field, fieldFiles] of Object.entries(files)) {
             attachedFileNames[field] = [];
             for (const file of fieldFiles) {
-                // Pula vídeos acima de 10MB (limite prático de email)
-                if (file.fieldname === 'videoVeiculo' && file.size > 10 * 1024 * 1024) {
-                    attachedFileNames[field].push(`${file.originalname} (arquivo muito grande para anexo de email)`);
+                if (file.size > MAX_FILE_BYTES) {
+                    attachedFileNames[field].push(`${file.originalname} (ignorado — acima de ${MAX_FILE_MB}MB)`);
                     continue;
                 }
+                if (totalBytes + file.size > MAX_TOTAL_BYTES) {
+                    attachedFileNames[field].push(`${file.originalname} (ignorado — limite total de ${MAX_TOTAL_MB}MB atingido)`);
+                    continue;
+                }
+                totalBytes += file.size;
                 attachments.push({
                     filename: file.originalname,
                     content: file.buffer,
@@ -147,7 +153,7 @@ function buildEmailHtml(d, attachedFileNames, fileLabels) {
       <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
 
         <tr><td style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:28px 40px;text-align:center;">
-          <img src="cid:logo.jpg" alt="Smart Brasil" style="height:56px;width:auto;vertical-align:middle;display:block;margin:0 auto 16px;"/>
+          <p style="color:#ffffff;margin:0 0 16px;font-size:24px;font-weight:700;letter-spacing:0.12em;">SMART BRASIL</p>
           <p style="color:#94a3b8;margin:0;font-size:13px;text-transform:uppercase;letter-spacing:0.1em;">Novo Comunicado de Evento</p>
           <h1 style="color:#ffffff;margin:8px 0 4px;font-size:22px;">${eventTypeMap[d.eventType] || d.eventType}</h1>
           <p style="color:#cbd5e1;margin:0;font-size:14px;">${d.nomeAssociado} &mdash; Placa ${d.placa || '—'}</p>
