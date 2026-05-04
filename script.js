@@ -598,6 +598,28 @@ function setupFileUpload(inputId, previewId) {
                     });
                 };
                 reader.readAsDataURL(file);
+            } else if (file.type.startsWith('video/')) {
+                const url = URL.createObjectURL(file);
+                const item = document.createElement('div');
+                item.className = 'file-preview-item';
+                item.style.background = 'rgba(255, 255, 255, 0.1)';
+                item.style.display = 'flex';
+                item.style.alignItems = 'center';
+                item.style.justifyContent = 'center';
+                item.style.flexDirection = 'column';
+                item.style.padding = '10px';
+                item.innerHTML = `
+                    <video src="${url}" controls style="max-width:100%; max-height:120px; border-radius:6px;"></video>
+                    <span style="font-size: 0.7rem; margin-top: 5px; text-align: center;">${file.name}</span>
+                    <button type="button" class="remove-file" data-index="${index}">×</button>
+                `;
+                preview.appendChild(item);
+
+                item.querySelector('.remove-file').addEventListener('click', () => {
+                    URL.revokeObjectURL(url);
+                    removeFile(input, index);
+                    item.remove();
+                });
             } else {
                 const item = document.createElement('div');
                 item.className = 'file-preview-item';
@@ -663,6 +685,7 @@ function removeFile(input, index) {
 }
 
 setupFileUpload('fotoVeiculo', 'fotoVeiculoPreview');
+setupFileUpload('videoVeiculo', 'videoVeiculoPreview');
 setupFileUpload('docVeiculo', 'docVeiculoPreview');
 
 // Documento do condutor — toggle obrigatoriedade
@@ -717,46 +740,24 @@ form.addEventListener('submit', (e) => {
         documentoValue = formData.get('cnh') || '';
     }
     
-    // Simulate processing time
-    setTimeout(() => {
-        // Log form data to console (for testing purposes)
-        console.log('Dados do formulário:', {
-            // Dados Pessoais
-            tipo_evento: formData.get('eventType'),
-            reparo_para: formData.get('reparoPara'),
-            nome_associado: formData.get('nomeAssociado'),
-            data_nascimento: formData.get('dataNascimento'),
-            condutor: formData.get('condutor'),
-            tipo_documento: tipoDocumento,
-            documento: documentoValue,
-            endereco: formData.get('endereco'),
-            telefone: formData.get('telefone'),
-            email: formData.get('email'),
-            
-            // Dados do Veículo
-            placa: formData.get('placa'),
-            marca: formData.get('marca'),
-            modelo: formData.get('modelo'),
-            ano_fabricacao: formData.get('anoFabricacao'),
-            ano_modelo: formData.get('anoModelo'),
-            cor: formData.get('cor'),
-            chassi: formData.get('chassi'),
-            
-            // Relato dos Fatos
-            data_evento: formData.get('dataEvento'),
-            local_evento: formData.get('localEvento'),
-            relato: formData.get('relato'),
-            testemunhas: formData.get('testemunhas'),
-        });
+    fetch('/submit', { method: 'POST', body: formData })
+        .then((res) => res.json())
+        .then((data) => {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<span>✓</span> Enviar Comunicado';
 
-        // Success
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = '<span>✓</span> Enviar Comunicado';
-        
-        // Show success modal
-        const modal = document.getElementById('successModal');
-        modal.classList.add('active');
-    }, 1500);
+            if (data.ok) {
+                const modal = document.getElementById('successModal');
+                modal.classList.add('active');
+            } else {
+                alert('Erro ao enviar o comunicado. Por favor, tente novamente.\n' + (data.error || ''));
+            }
+        })
+        .catch(() => {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<span>✓</span> Enviar Comunicado';
+            alert('Erro de conexão. Verifique sua internet e tente novamente.');
+        });
 });
 
 // ============================================
